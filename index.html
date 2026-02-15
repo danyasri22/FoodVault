@@ -38,6 +38,16 @@
             border-color: #10b981;
             box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.05);
         }
+
+        /* Image grayscale hover effect */
+        .group:hover img.grayscale-img {
+            filter: grayscale(0%) !important;
+        }
+        
+        img.grayscale-img {
+            filter: grayscale(100%);
+            transition: filter 0.8s cubic-bezier(0.4, 0.0, 0.2, 1), transform 1.5s cubic-bezier(0.4, 0.0, 0.2, 1);
+        }
     </style>
 </head>
 <body class="overflow-x-hidden">
@@ -87,9 +97,9 @@
         <div class="relative max-w-6xl mx-auto px-4 group">
             <div class="absolute -inset-1 bg-gradient-to-r from-green-500 to-emerald-600 rounded-[4rem] blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
             <div class="relative bg-[#111827] rounded-t-[4rem] border-x border-t border-white/10 overflow-hidden">
-                <img src="https://www.crestwood.com/wp-content/uploads/2025/03/intentory-management-software-food-industry.jpg" 
+                <img src="./image/assets/intentory-management-software-food-industry.jpg" 
                      alt="Smart Kitchen Dashboard" 
-                     class="opacity-60 grayscale group-hover:grayscale-0 transition-all duration-1000 transform group-hover:scale-105">
+                     class="w-full h-auto opacity-60 grayscale-img transform group-hover:scale-105 transition-transform duration-1000">
                 <div class="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-transparent to-transparent"></div>
             </div>
         </div>
