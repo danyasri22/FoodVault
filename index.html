@@ -48,6 +48,10 @@
             filter: grayscale(100%);
             transition: filter 0.8s cubic-bezier(0.4, 0.0, 0.2, 1), transform 1.5s cubic-bezier(0.4, 0.0, 0.2, 1);
         }
+        /* Switch to color when image enters viewport */
+        img.grayscale-img.in-view {
+            filter: grayscale(0%);
+        }
     </style>
 </head>
 <body class="overflow-x-hidden">
@@ -183,6 +187,27 @@
                     el.style.transform = "translateY(0)";
                 }
             });
+        });
+
+        // IntersectionObserver to switch images from grayscale to color when visible
+        document.addEventListener('DOMContentLoaded', () => {
+            const images = document.querySelectorAll('img.grayscale-img');
+            if ('IntersectionObserver' in window) {
+                const io = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('in-view');
+                        } else {
+                            entry.target.classList.remove('in-view');
+                        }
+                    });
+                }, { root: null, rootMargin: '0px 0px -10% 0px', threshold: 0.1 });
+
+                images.forEach(img => io.observe(img));
+            } else {
+                // Fallback: make images color when JS runs
+                images.forEach(img => img.classList.add('in-view'));
+            }
         });
     </script>
 </body>
