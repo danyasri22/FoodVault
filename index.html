@@ -190,25 +190,33 @@
         });
 
         // IntersectionObserver to switch images from grayscale to color when visible
-        document.addEventListener('DOMContentLoaded', () => {
+        (function initImageObserver() {
             const images = document.querySelectorAll('img.grayscale-img');
-            if ('IntersectionObserver' in window) {
-                const io = new IntersectionObserver((entries) => {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) {
-                            entry.target.classList.add('in-view');
-                        } else {
-                            entry.target.classList.remove('in-view');
-                        }
-                    });
-                }, { root: null, rootMargin: '0px 0px -10% 0px', threshold: 0.1 });
+            const setup = () => {
+                if ('IntersectionObserver' in window) {
+                    const io = new IntersectionObserver((entries) => {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting) {
+                                entry.target.classList.add('in-view');
+                            } else {
+                                entry.target.classList.remove('in-view');
+                            }
+                        });
+                    }, { root: null, rootMargin: '0px 0px -10% 0px', threshold: 0.1 });
 
-                images.forEach(img => io.observe(img));
+                    images.forEach(img => io.observe(img));
+                } else {
+                    // Fallback: make images color when JS runs
+                    images.forEach(img => img.classList.add('in-view'));
+                }
+            };
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', setup);
             } else {
-                // Fallback: make images color when JS runs
-                images.forEach(img => img.classList.add('in-view'));
+                setup();
             }
-        });
+        })();
     </script>
 </body>
 </html>
