@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FoodVault | Premium Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="advanced.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: #0f172a; /* Match index.html background */
+            color: #f8fafc;
+        }
+
+        /* Glassmorphism Sidebar */
+        .sidebar { 
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-link {
+            transition: all 0.3s ease;
+            color: #94a3b8;
+        }
+        .nav-link:hover { color: #10b981; background: rgba(255, 255, 255, 0.03); }
+        .nav-link.active {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        /* Glass Cards */
+        .stat-card {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 2rem;
+        }
+
+        .item-card {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 1.5rem;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .item-card:hover {
+            transform: translateY(-8px);
+            background: rgba(30, 41, 59, 0.8);
+            border-color: #10b981;
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Input Styles */
+        input, select {
+            background: rgba(15, 23, 42, 0.6) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            color: white !important;
+        }
+        input:focus { border-color: #10b981 !important; outline: none; }
+
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+    
+    </style>
+</head>
+<body class="flex min-h-screen">
+
+    <aside class="w-80 sidebar hidden lg:flex flex-col p-8 h-screen sticky top-0">
+        <div class="flex items-center gap-3 mb-12">
+            <div class="w-10 h-10 bg-green-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-green-500/20 font-bold">FW</div>
+            <span class="text-2xl font-extrabold tracking-tighter text-white">FoodVault</span>
+        </div>
+        
+        <nav class="space-y-2 flex-1">
+            <a href="inventory.html" class="nav-link active flex items-center gap-4 p-4 rounded-2xl text-sm font-bold"><span>📦</span> My Pantry</a>
+            <a href="recipes.html" class="nav-link flex items-center gap-4 p-4 rounded-2xl text-sm font-bold"><span>👩‍🍳</span> AI Recipes</a>
+            <a href="analytics.html" class="nav-link flex items-center gap-4 p-4 rounded-2xl text-sm font-bold"><span>📊</span> Analytics</a>
+            <a href="donations.html" class="nav-link flex items-center gap-4 p-4 rounded-2xl text-sm font-bold"><span>🤝</span> Donation Hub</a>
+        </nav>
+
+        <div class="mt-auto bg-white/5 rounded-[2rem] p-6 border border-white/10">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center font-bold text-xl text-white" id="userInitial">U</div>
+                <div class="overflow-hidden">
+                    <p id="userNameDisplay" class="font-bold text-white truncate">User</p>
+                    <p class="text-[9px] text-green-500 uppercase tracking-widest font-black">Elite Guardian</p>
+                </div>
+            </div>
+            <button onclick="logout()" class="w-full py-3 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-black rounded-xl transition border border-red-500/20 uppercase tracking-widest">Sign Out</button>
+        </div>
+    </aside>
+
+    <main class="flex-1 p-6 lg:p-12 overflow-y-auto">
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-16 gap-6">
+            <div>
+                <h1 class="text-5xl font-black text-white tracking-tighter mb-2">My Pantry</h1>
+                <p class="text-slate-400 font-medium tracking-wide">You have <span id="expText" class="text-orange-400 font-bold">0 critical items</span> requiring attention.</p>
+            </div>
+            <button onclick="toggleModal()" class="bg-green-500 hover:bg-green-400 text-white px-8 py-4 rounded-2xl font-black transition-all shadow-2xl shadow-green-500/20 flex items-center gap-3">
+                <span class="text-2xl leading-none">+</span> Add New Item
+            </button>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-16">
+            <div class="stat-card p-8">
+                <p class="text-slate-500 text-[10px] font-black uppercase tracking-[0.2em] mb-3">Inventory Size</p>
+                <h3 id="totalCount" class="text-4xl font-black text-white">0</h3>
+            </div>
+            <div class="stat-card p-8">
+                <p class="text-orange-400/80 text-[10px] font-black uppercase tracking-[0.2em] mb-3">Expiring Soon</p>
+                <h3 id="expiringCount" class="text-4xl font-black text-orange-500">0</h3>
+            </div>
+            <div class="stat-card p-8 md:col-span-2 bg-gradient-to-br from-green-500/20 to-emerald-900/40 border-green-500/20 flex justify-between items-center relative overflow-hidden">
+                <div class="relative z-10">
+                    <p class="text-green-400 text-[10px] font-black uppercase tracking-[0.2em] mb-3">Sustainability Impact</p>
+                    <h3 class="text-4xl font-black text-white mb-2" id="ecoTitle">Eco Legend</h3>
+                    <div id="co2Badge" class="text-xs font-black bg-green-500 text-white px-3 py-1.5 rounded-lg inline-block">Saved 0.0kg CO2</div>
+                </div>
+                <div class="text-8xl opacity-10 absolute -right-4 -bottom-4 rotate-12">🌱</div>
+            </div>
+        </div>
+
+        <div id="inventoryGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+            </div>
+    </main>
+
+    <div id="itemModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center z-50 p-6">
+        <div class="bg-slate-900 w-full max-w-md rounded-[3rem] p-10 border border-white/10 shadow-2xl">
+            <h2 class="text-3xl font-black text-white mb-8 tracking-tighter">New Entry</h2>
+            <form id="foodForm" class="space-y-6">
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black text-slate-500 uppercase ml-2">Product Name</label>
+                    <input type="text" id="itemName" placeholder="e.g. Organic Milk" required class="w-full p-4 rounded-2xl">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-500 uppercase ml-2">Quantity</label>
+                        <input type="number" id="itemQty" placeholder="1" required class="w-full p-4 rounded-2xl">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-500 uppercase ml-2">Category</label>
+                        <select id="itemCategory" class="w-full p-4 rounded-2xl appearance-none">
+                            <option>Vegetables</option><option>Dairy</option><option>Proteins</option><option>Grains</option><option>Fruits</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black text-slate-500 uppercase ml-2">Expiry Date</label>
+                    <input type="date" id="itemExpiry" required class="w-full p-4 rounded-2xl">
+                </div>
+                <div class="flex gap-4 pt-6">
+                    <button type="button" onclick="toggleModal()" class="flex-1 font-bold text-slate-500">Cancel</button>
+                    <button type="submit" class="flex-1 bg-green-500 text-white py-4 rounded-2xl font-black shadow-lg shadow-green-500/20">Add to Pantry</button>
+                </div>
+                <button onclick="simulateIoTSync()" class="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 mt-4">
+    🔄 Sync Smart Fridge (IoT)
+</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- DONOR DETAILS MODAL -->
+    <div id="donorModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center z-50 p-6">
+        <div class="bg-slate-900 w-full max-w-md rounded-[3rem] p-10 border border-white/10 shadow-2xl">
+            <h2 class="text-3xl font-black text-white mb-2 tracking-tighter">Share Your Details</h2>
+            <p class="text-slate-400 text-sm mb-8">Help the receiver know how to contact you</p>
+            <form id="donorForm" class="space-y-6">
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black text-slate-500 uppercase ml-2">Your Location/Address</label>
+                    <input type="text" id="donorLocation" placeholder="e.g. Downtown, Oak St Apt 5" required class="w-full p-4 rounded-2xl">
+                </div>
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black text-slate-500 uppercase ml-2">Contact Phone/Email</label>
+                    <input type="text" id="donorContact" placeholder="e.g. john@email.com or 555-123-4567" required class="w-full p-4 rounded-2xl">
+                </div>
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black text-slate-500 uppercase ml-2">Notes (Optional)</label>
+                    <input type="text" id="donorNotes" placeholder="e.g. Best pickup between 5-7pm" class="w-full p-4 rounded-2xl">
+                </div>
+                <div class="flex gap-4 pt-6">
+                    <button type="button" onclick="closeDonorModal()" class="flex-1 font-bold text-slate-500">Cancel</button>
+                    <button type="submit" class="flex-1 bg-green-500 text-white py-4 rounded-2xl font-black shadow-lg shadow-green-500/20">Post to Hub</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Check if user is logged in
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        if (!currentUser || !currentUser.email) {
+            // Redirect to login if not logged in
+            window.location.href = 'login.html';
+        }
+        
+        document.getElementById('userNameDisplay').innerText = currentUser.name;
+        document.getElementById('userInitial').innerText = currentUser.name[0];
+
+        let inventory = JSON.parse(localStorage.getItem(`inventory_${currentUser.email}`)) || [];
+        let impactData = JSON.parse(localStorage.getItem(`impact_${currentUser.email}`)) || { donated: 0, composted: 0, trashed: 0, history: [] };
+        let currentItemForDonation = null;  // Store item being donated
+
+        function toggleModal() { document.getElementById('itemModal').classList.toggle('hidden'); }
+        
+        function openDonorModal(itemId) {
+            currentItemForDonation = inventory.find(i => i.id === itemId);
+            if (!currentItemForDonation) return;
+            document.getElementById('donorModal').classList.remove('hidden');
+            document.getElementById('donorForm').reset();
+        }
+        
+        function closeDonorModal() {
+            document.getElementById('donorModal').classList.add('hidden');
+            currentItemForDonation = null;
+        }
+
+        document.getElementById('foodForm').onsubmit = (e) => {
+            e.preventDefault();
+            const newItem = {
+                id: Date.now(),
+                name: document.getElementById('itemName').value,
+                qty: document.getElementById('itemQty').value,
+                cat: document.getElementById('itemCategory').value,
+                expiry: document.getElementById('itemExpiry').value
+            };
+            inventory.push(newItem);
+            saveData();
+            e.target.reset();
+            toggleModal();
+        };
+
+        function saveData() {
+    localStorage.setItem(`inventory_${currentUser.email}`, JSON.stringify(inventory));
+    localStorage.setItem(`impact_${currentUser.email}`, JSON.stringify(impactData));
+    renderAll();
+    
+    // Dispatch custom event for same-tab sync
+    window.dispatchEvent(new CustomEvent('dataUpdated'));
+    
+    // Add this to trigger the alerts we wrote in advanced-features.js
+    if (typeof checkAndNotify === "function") {
+        checkAndNotify();
+    }
+}
+
+        function deleteItem(id) {
+            const item = inventory.find(i => i.id === id);
+            const action = confirm(`Did you COMPOST "${item.name}"? (Eco-Friendly)\n\nOK = Yes\nCancel = No (Landfill)`);
+            if (action) {
+                impactData.composted++;
+                impactData.history.push({ name: item.name, type: 'compost', date: new Date().toLocaleDateString() });
+            } else {
+                impactData.trashed++;
+            }
+            inventory = inventory.filter(i => i.id !== id);
+            saveData();
+        }
+
+        function markForDonation(id) {
+            openDonorModal(id);
+        }
+        
+        // Handle donor form submission
+        document.getElementById('donorForm').onsubmit = (e) => {
+            e.preventDefault();
+            if (!currentItemForDonation) return;
+            
+            const location = document.getElementById('donorLocation').value;
+            const contact = document.getElementById('donorContact').value;
+            const notes = document.getElementById('donorNotes').value;
+            
+            const publicDonations = JSON.parse(localStorage.getItem('public_donations')) || [];
+            
+            const donationItem = {
+                id: currentItemForDonation.id,
+                name: currentItemForDonation.name,
+                quantity: currentItemForDonation.qty,
+                category: currentItemForDonation.cat,
+                expiry: currentItemForDonation.expiry,
+                donorName: currentUser.name,
+                donorEmail: currentUser.email,
+                donorLocation: location,
+                donorContact: contact,
+                donorNotes: notes,
+                status: 'Available',
+                donatedAt: new Date().toISOString()
+            };
+            
+            publicDonations.push(donationItem);
+            localStorage.setItem('public_donations', JSON.stringify(publicDonations));
+            
+            impactData.donated++;
+            impactData.history.push({ name: currentItemForDonation.name, type: 'donation', date: new Date().toLocaleDateString() });
+            
+            inventory = inventory.filter(i => i.id !== currentItemForDonation.id);
+            
+            closeDonorModal();
+            saveData();
+            alert("Sent to Donation Hub! 🤝");
+        }
+
+        function renderAll() {
+            const grid = document.getElementById('inventoryGrid');
+            const today = new Date();
+            let expCount = 0;
+            grid.innerHTML = '';
+
+            inventory.sort((a,b) => new Date(a.expiry) - new Date(b.expiry)).forEach(item => {
+                const diff = Math.ceil((new Date(item.expiry) - today) / (1000 * 60 * 60 * 24));
+                let statusColor = "bg-green-500/10 text-green-400 border border-green-500/20";
+                let statusText = "Fresh";
+                if (diff < 0) { statusColor = "bg-red-500/10 text-red-400 border border-red-500/20"; statusText = "Expired"; }
+                else if (diff <= 3) { statusColor = "bg-orange-500/10 text-orange-400 border border-orange-500/20"; statusText = "Critical"; expCount++; }
+
+                grid.innerHTML += `
+                    <div class="item-card p-8 flex flex-col relative overflow-hidden group">
+                        <div class="flex justify-between items-start mb-6">
+                            <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${statusColor}">${statusText}</span>
+                            <button onclick="deleteItem(${item.id})" class="text-slate-600 hover:text-red-400 transition">✕</button>
+                        </div>
+                        <h4 class="text-xl font-black text-white mb-1">${item.name}</h4>
+                        <p class="text-xs text-slate-500 mb-8 font-bold uppercase tracking-wider">${item.cat} • ${item.qty} Units</p>
+                        
+                        <div class="mt-auto flex justify-between items-end border-t border-white/5 pt-6">
+                            <div>
+                                <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Expiry</p>
+                                <p class="text-sm font-bold ${diff <= 3 ? 'text-orange-400' : 'text-slate-300'}">${item.expiry}</p>
+                            </div>
+                            <button onclick="markForDonation(${item.id})" class="text-[10px] font-black uppercase tracking-widest text-green-500 hover:text-white transition">Donate Hub</button>
+                        </div>
+                    </div>`;
+            });
+
+            document.getElementById('totalCount').innerText = inventory.length;
+            document.getElementById('expiringCount').innerText = expCount;
+            document.getElementById('expText').innerText = `${expCount} critical items`;
+            
+            const co2 = ((impactData.donated + impactData.composted) * 0.5).toFixed(1);
+            document.getElementById('co2Badge').innerText = `Saved ${co2}kg CO2`;
+        }
+
+        function logout() { localStorage.removeItem('currentUser'); window.location.href = 'index.html'; }
+        renderAll();
+        
+    </script>
+</body>
+</html>

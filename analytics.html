@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FoodVault | Impact Analytics</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="advanced.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0f172a; color: #f8fafc; }
+        .sidebar { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(20px); border-right: 1px solid rgba(255, 255, 255, 0.05); }
+        .nav-link { transition: all 0.3s ease; color: #94a3b8; }
+        .nav-link:hover { color: #10b981; background: rgba(255, 255, 255, 0.03); }
+        .nav-link.active { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
+        .glass-panel { background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); backdrop-filter: blur(12px); border-radius: 2.5rem; }
+        
+        /* Stats Glow */
+        .glow-green { text-shadow: 0 0 20px rgba(16, 185, 129, 0.4); }
+        .glow-orange { text-shadow: 0 0 20px rgba(249, 115, 22, 0.4); }
+    </style>
+</head>
+<body class="flex min-h-screen">
+
+    <aside class="w-80 sidebar hidden lg:flex flex-col p-8 h-screen sticky top-0">
+        <div class="flex items-center gap-3 mb-12">
+            <div class="w-10 h-10 bg-green-500 rounded-xl flex items-center justify-center text-white shadow-lg font-bold">FW</div>
+            <span class="text-2xl font-extrabold tracking-tighter text-white">FoodVault</span>
+        </div>
+        <nav class="space-y-2 flex-1">
+            <a href="inventory.html" class="nav-link flex items-center gap-4 p-4 rounded-2xl text-sm font-bold"><span>📦</span> My Pantry</a>
+            <a href="recipes.html" class="nav-link flex items-center gap-4 p-4 rounded-2xl text-sm font-bold"><span>👩‍🍳</span> AI Recipes</a>
+            <a href="analytics.html" class="nav-link active flex items-center gap-4 p-4 rounded-2xl text-sm font-bold"><span>📊</span> Analytics</a>
+            <a href="donations.html" class="nav-link flex items-center gap-4 p-4 rounded-2xl text-sm font-bold"><span>🤝</span> Donation Hub</a>
+        </nav>
+    </aside>
+
+    <main class="flex-1 p-6 lg:p-12">
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-16 gap-6">
+            <div>
+                <h1 class="text-5xl font-black text-white tracking-tighter mb-2">Impact Analytics</h1>
+                <p class="text-slate-400 font-medium">Real-time tracking of your environmental contribution.</p>
+            </div>
+            <div class="flex gap-4">
+                <button onclick="location.reload()" class="p-4 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 transition">🔄 Refresh Sync</button>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+            <div class="glass-panel p-10 relative overflow-hidden">
+                <p class="text-[10px] font-black text-green-500 uppercase tracking-[0.2em] mb-4">Total CO2 Saved</p>
+                <h3 id="co2Val" class="text-6xl font-black text-white mb-2 glow-green">0.0</h3>
+                <p class="text-sm text-slate-500 font-medium tracking-wide">Kilograms Offset</p>
+                <div class="absolute -right-4 -bottom-4 text-8xl opacity-5 rotate-12">🌿</div>
+            </div>
+
+            <div class="glass-panel p-10 relative overflow-hidden">
+                <p class="text-[10px] font-black text-orange-400 uppercase tracking-[0.2em] mb-4">Items Rescued</p>
+                <h3 id="wasteVal" class="text-6xl font-black text-white mb-2 glow-orange">0</h3>
+                <p class="text-sm text-slate-500 font-medium tracking-wide">Donated + Composted</p>
+                <div class="absolute -right-4 -bottom-4 text-8xl opacity-5 rotate-12">🍎</div>
+            </div>
+
+            <div class="glass-panel p-10 bg-gradient-to-br from-green-500/10 to-transparent border-green-500/20">
+                <p class="text-[10px] font-black text-white uppercase tracking-[0.2em] mb-4">Global Rank</p>
+                <h3 id="statusTitle" class="text-4xl font-black text-white mb-2">Seedling</h3>
+                <p id="rankText" class="text-xs text-green-500 font-bold uppercase tracking-widest">Processing Impact...</p>
+            </div>
+        </div>
+
+        <section class="glass-panel p-10">
+            <div class="mb-10">
+                <h2 class="text-3xl font-black text-white tracking-tight">Eco-Hero Leaderboard</h2>
+                <p class="text-slate-500 text-sm mt-1">Comparing your impact with the FoodVault community.</p>
+            </div>
+            <div class="glass-panel p-8 mb-12 border-l-4 border-purple-500 bg-purple-500/5">
+    <div class="flex items-center gap-4 mb-2">
+        <span class="text-xl">🤖</span>
+        <h4 class="text-lg font-bold text-purple-400 tracking-tight">AI Predictive Insight</h4>
+    </div>
+    <p id="aiInsightText" class="text-slate-400 text-sm italic">Analyzing your consumption patterns...</p>
+</div>
+            <div id="leaderboardList" class="space-y-4">
+                </div>
+
+              
+        </section>
+    </main>
+
+
+    <script>
+        // Check if user is logged in
+        if (!localStorage.getItem('currentUser')) {
+            window.location.href = 'login.html';
+        }
+        
+        // CORE SYNC LOGIC
+        function getImpactData() {
+            const user = JSON.parse(localStorage.getItem('currentUser')) || { email: 'hero@foodvault.com' };
+            // Check User-Specific Key OR Global Key OR Return Defaults
+            return JSON.parse(localStorage.getItem(`impact_${user.email}`)) || 
+                   JSON.parse(localStorage.getItem('global_impact')) || 
+                   { donated: 0, composted: 0, trashed: 0 };
+        }
+
+        function updateUI() {
+    const user = JSON.parse(localStorage.getItem('currentUser')) || { email: 'hero@foodvault.com' };
+    
+    // 1. Get Local Impact Stats (Donations + Composts)
+    const localImpact = JSON.parse(localStorage.getItem(`impact_${user.email}`)) || { donated: 0, composted: 0 };
+    
+    // 2. Get Public Donations to find items this user CLAIMED
+    // This addresses "Surplus food can be seamlessly donated or claimed" from your abstract
+    const allPublic = JSON.parse(localStorage.getItem('public_donations')) || [];
+    const itemsIClaimed = allPublic.filter(item => item.claimedBy === user.email).length;
+
+    // 3. Calculate True Total Impact
+    const totalRescued = localImpact.donated + localImpact.composted + itemsIClaimed;
+    const co2 = (totalRescued * 0.5).toFixed(1);
+
+    // Update Counters with Animation
+    animateValue("co2Val", parseFloat(document.getElementById('co2Val').innerText) || 0, co2, 1000);
+    animateValue("wasteVal", parseInt(document.getElementById('wasteVal').innerText) || 0, totalRescued, 1000);
+
+    // Update Rank
+    const status = document.getElementById('statusTitle');
+    const rankText = document.getElementById('rankText');
+    if (totalRescued >= 20) {
+        status.innerText = "Earth Guardian";
+        rankText.innerText = "Top 1% of Heroes";
+    } else if (totalRescued >= 5) {
+        status.innerText = "Sprout Specialist";
+        rankText.innerText = "Top 15% of Heroes";
+    } else {
+        status.innerText = "Seedling";
+        rankText.innerText = "Just Starting Out";
+    }
+
+    renderLeaderboard(co2);
+}
+
+        function renderLeaderboard(userCO2) {
+            const user = JSON.parse(localStorage.getItem('currentUser')) || { name: 'You' };
+            const container = document.getElementById('leaderboardList');
+            
+            const heroes = [
+                { name: "Sarah J.", score: 42.5, color: "bg-yellow-500/20 text-yellow-500" },
+                { name: "Marcus C.", score: 31.2, color: "bg-slate-500/20 text-slate-300" },
+                { name: user.name + " (You)", score: parseFloat(userCO2), color: "bg-green-500/20 text-green-400", isUser: true }
+            ].sort((a, b) => b.score - a.score);
+
+            container.innerHTML = heroes.map((h, i) => `
+                <div class="flex items-center justify-between p-6 rounded-3xl border ${h.isUser ? 'bg-green-500/10 border-green-500/30 shadow-lg shadow-green-500/5' : 'bg-white/5 border-white/5'}">
+                    <div class="flex items-center gap-6">
+                        <span class="text-xs font-black text-slate-600">#${i + 1}</span>
+                        <div class="w-12 h-12 rounded-2xl ${h.color} flex items-center justify-center font-black">${h.name[0]}</div>
+                        <p class="font-bold text-white">${h.name}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-black text-white text-xl">${h.score}kg</p>
+                        <p class="text-[9px] font-black uppercase text-slate-500 tracking-widest">CO2 OFFSET</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Helper: Smooth counter animation
+        function animateValue(id, start, end, duration) {
+            const obj = document.getElementById(id);
+            if (start === end) return;
+            const range = end - start;
+            let current = start;
+            const increment = end > start ? 0.1 : -0.1;
+            const stepTime = Math.abs(Math.floor(duration / (range * 10)));
+            const timer = setInterval(() => {
+                current += increment;
+                obj.innerText = current.toFixed(1);
+                if ((increment > 0 && current >= end) || (increment < 0 && current <= end)) {
+                    obj.innerText = end;
+                    clearInterval(timer);
+                }
+            }, stepTime || 50);
+        }
+
+        // SMART SYNC: Listen for storage changes from other tabs AND custom same-tab events
+        window.addEventListener('storage', () => {
+            console.log("Storage updated in another tab! Syncing...");
+            updateUI();
+        });
+        
+        // Custom event for same-tab sync
+        window.addEventListener('dataUpdated', () => {
+            console.log("Data updated! Syncing analytics...");
+            updateUI();
+        });
+
+        // Initial Load
+        updateUI();
+        // AI Predictive Insight Logic
+const insightBox = document.getElementById('aiInsightText');
+const currentUser = JSON.parse(localStorage.getItem('currentUser')) || { email: 'hero@foodvault.com' };
+const inventory = JSON.parse(localStorage.getItem(`inventory_${currentUser.email}`)) || [];
+//const inventory = JSON.parse(localStorage.getItem(`inventory_${user.email}`)) || [];
+const itemsExpiringSoon = inventory.filter(item => {
+    const diff = Math.ceil((new Date(item.expiry) - new Date()) / (1000 * 60 * 60 * 24));
+    return diff <= 3;
+}).length;
+
+if (itemsExpiringSoon > 0) {
+    insightBox.innerText = `AI Analysis: You have ${itemsExpiringSoon} items expiring soon. Our model predicts a 40% waste risk. Suggestion: Visit the Donation Hub now to offset impact.`;
+} else {
+    insightBox.innerText = "AI Analysis: Your inventory management is optimal. No immediate waste risks detected for the next 72 hours.";
+}
+    </script>
+</body>
+</html>

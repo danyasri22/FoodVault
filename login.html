@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FoodVault | Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background: radial-gradient(circle at 50% 50%, #1e293b 0%, #0f172a 100%);
+            color: #f8fafc;
+        }
+    </style>
+</head>
+<body class="flex min-h-screen items-center justify-center px-6">
+    <div class="w-full max-w-md">
+        <!-- Logo & Header -->
+        <div class="text-center mb-12">
+            <div class="inline-flex items-center gap-3 mb-8">
+                <div class="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center text-white shadow-lg font-bold">FV</div>
+                <span class="text-3xl font-black tracking-tighter text-white">FoodVault</span>
+            </div>
+            <h1 class="text-4xl font-black text-white mb-3 tracking-tighter">Welcome Back</h1>
+            <p class="text-slate-400 font-medium">Sign in to manage your food inventory</p>
+        </div>
+
+        <!-- Login Form -->
+        <form id="loginForm" class="space-y-6 bg-slate-900/50 backdrop-blur-xl border border-white/10 rounded-[2.5rem] p-10 shadow-2xl">
+            <!-- Name Field -->
+            <div class="space-y-3">
+                <label class="text-xs font-black text-slate-400 uppercase tracking-widest ml-2">Your Name</label>
+                <input 
+                    type="text" 
+                    id="userName" 
+                    placeholder="e.g. Jessica" 
+                    required 
+                    class="w-full p-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-slate-500 outline-none focus:border-green-500 transition"
+                >
+            </div>
+
+            <!-- Email Field -->
+            <div class="space-y-3">
+                <label class="text-xs font-black text-slate-400 uppercase tracking-widest ml-2">Email Address</label>
+                <input 
+                    type="email" 
+                    id="userEmail" 
+                    placeholder="you@example.com" 
+                    required 
+                    class="w-full p-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-slate-500 outline-none focus:border-green-500 transition"
+                >
+            </div>
+
+            <!-- Login Button -->
+            <button 
+                type="submit" 
+                class="w-full py-5 bg-green-500 hover:bg-green-400 text-white font-black rounded-2xl shadow-2xl shadow-green-500/20 transition-all uppercase text-sm tracking-widest mt-8"
+            >
+                🚀 Enter FoodVault
+            </button>
+
+            <!-- Back Link -->
+            <div class="text-center pt-6 border-t border-white/10">
+                <a href="index.html" class="text-sm font-bold text-slate-400 hover:text-green-400 transition">
+                    ← Back to Home
+                </a>
+            </div>
+        </form>
+
+        <!-- Info Box -->
+        <div class="mt-10 p-6 bg-white/5 border border-white/10 rounded-2xl text-center">
+            <p class="text-xs text-slate-400 font-medium">
+                No account needed — just enter your name and email to get started with FoodVault!
+            </p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').onsubmit = (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('userName').value.trim();
+            const email = document.getElementById('userEmail').value.trim();
+            
+            if (!name || !email) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            // Save user data to localStorage
+            const userData = {
+                name: name,
+                email: email,
+                loginTime: new Date().toISOString()
+            };
+            
+            localStorage.setItem('currentUser', JSON.stringify(userData));
+            
+            // Initialize impact data for this user
+            const impactData = {
+                donated: 0,
+                composted: 0,
+                trashed: 0,
+                history: []
+            };
+            localStorage.setItem(`impact_${email}`, JSON.stringify(impactData));
+            
+            // Redirect to inventory
+            window.location.href = 'inventory.html';
+        };
+    </script>
+</body>
+</html>

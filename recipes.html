@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FoodVault | AI Recipe Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0f172a; color: #f8fafc; }
+        .sidebar { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(20px); border-right: 1px solid rgba(255, 255, 255, 0.05); }
+        .nav-link { transition: all 0.3s ease; color: #94a3b8; }
+        .nav-link:hover { color: #10b981; background: rgba(255, 255, 255, 0.03); }
+        .nav-link.active { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
+        
+        .glass-card { background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border-radius: 2.5rem; }
+        .recipe-card { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .recipe-card:hover { transform: translateY(-8px); border-color: #10b981; background: rgba(30, 41, 59, 0.8); }
+        
+        input { background: rgba(15, 23, 42, 0.6) !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; color: white !important; }
+        .custom-checkbox:checked { background-color: #10b981; }
+        
+        @media print {
+            .sidebar, .no-print, button { display: none !important; }
+            body { background: white; color: black; }
+            .glass-card { border: 1px solid #eee; background: white; }
+        }
+    </style>
+</head>
+<body class="flex min-h-screen">
+
+    <aside class="w-80 sidebar hidden lg:flex flex-col p-8 h-screen sticky top-0">
+        <div class="flex items-center gap-3 mb-12">
+            <div class="w-10 h-10 bg-green-500 rounded-xl flex items-center justify-center text-white shadow-lg font-bold">FW</div>
+            <span class="text-2xl font-extrabold tracking-tighter text-white">FoodVault</span>
+        </div>
+        <nav class="space-y-2 flex-1">
+            <a href="inventory.html" class="nav-link flex items-center gap-4 p-4 rounded-2xl text-sm font-bold"><span>📦</span> My Pantry</a>
+            <a href="recipes.html" class="nav-link active flex items-center gap-4 p-4 rounded-2xl text-sm font-bold"><span>👩‍🍳</span> AI Recipes</a>
+            <a href="analytics.html" class="nav-link flex items-center gap-4 p-4 rounded-2xl text-sm font-bold"><span>📊</span> Analytics</a>
+            <a href="donations.html" class="nav-link flex items-center gap-4 p-4 rounded-2xl text-sm font-bold"><span>🤝</span> Donation Hub</a>
+        </nav>
+    </aside>
+
+    <main class="flex-1 p-6 lg:p-12 overflow-y-auto">
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-16 gap-6">
+            <div>
+                <h1 class="text-5xl font-black text-white tracking-tighter mb-2">AI Recipe Hub</h1>
+                <p class="text-slate-400 font-medium">Auto-generated meals based on your expiring ingredients.</p>
+            </div>
+            <div class="flex gap-4 no-print">
+                <button onclick="window.print()" class="bg-white/5 border border-white/10 hover:bg-white/10 text-white px-6 py-4 rounded-2xl font-bold transition flex items-center gap-2">
+                    <span>🖨️</span> Print List
+                </button>
+            </div>
+        </header>
+
+        <section class="mb-20">
+            <div class="flex items-center gap-4 mb-8">
+                <span class="px-4 py-1.5 bg-green-500/10 text-green-400 rounded-full text-[10px] font-black uppercase tracking-widest border border-green-500/20">Critical Rescue</span>
+                <h2 class="text-2xl font-bold text-white">Recommended for Today</h2>
+            </div>
+            <div id="recipesGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                </div>
+        </section>
+
+        <section class="glass-card p-10">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
+                <div>
+                    <h2 class="text-3xl font-black text-white tracking-tight mb-1">Shopping Checklist</h2>
+                    <p class="text-slate-500 text-sm font-medium">Missing staples for your generated recipes.</p>
+                </div>
+                <div class="flex gap-3 no-print">
+                    <button onclick="copyToClipboard()" class="text-xs font-black uppercase tracking-widest text-green-500 bg-green-500/10 px-6 py-3 rounded-xl hover:bg-green-500 hover:text-white transition">Copy List</button>
+                    <button onclick="clearCompleted()" class="text-xs font-black uppercase tracking-widest text-slate-500 hover:text-red-400 transition">Clear All</button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                <div class="space-y-4">
+                    <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-2">Quick Add</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="manualItem" placeholder="e.g. Sea Salt" class="flex-1 px-5 py-4 rounded-2xl outline-none focus:ring-1 focus:ring-green-500 transition">
+                        <button onclick="addManualItem()" class="bg-green-500 text-white px-6 rounded-2xl font-black text-xl hover:bg-green-400 transition shadow-lg shadow-green-500/20">+</button>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-2">
+                    <ul id="shoppingListContainer" class="space-y-3">
+                        </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Check if user is logged in
+        if (!localStorage.getItem('currentUser')) {
+            window.location.href = 'login.html';
+        }
+        
+        const currentUser = JSON.parse(localStorage.getItem('currentUser')) || { name: 'Hero', email: 'hero@foodvault.com' };
+        const inventory = JSON.parse(localStorage.getItem(`inventory_${currentUser.email}`)) || [];
+        let shoppingList = JSON.parse(localStorage.getItem(`shop_${currentUser.email}`)) || [];
+
+        const recipeTemplates = {
+            'Vegetables': { title: "Roasted Harvest Medley", desc: "A caramelized blend of your soon-to-expire veggies.", icon: "🥗", staples: ["Olive Oil", "Garlic", "Thyme"] },
+            'Dairy': { title: "Creamy Artisan Pasta", desc: "Rich and savory sauce using up your dairy reserves.", icon: "🍝", staples: ["Pasta", "Black Pepper", "Butter"] },
+            'Proteins': { title: "High-Protein Stir Fry", desc: "Flash-cooked protein paired with pantry spices.", icon: "🍳", staples: ["Soy Sauce", "Ginger", "Sesame Oil"] },
+            'Fruits': { title: "Antioxidant Smoothie Bowl", desc: "Refreshing blend of ripe fruits and oats.", icon: "🍓", staples: ["Honey", "Yogurt", "Chia Seeds"] },
+            'Grains': { title: "Savory Grain Bowl", desc: "Wholesome grains topped with available greens.", icon: "🍚", staples: ["Broth", "Onion", "Cumin"] }
+        };
+
+        function init() {
+            renderRecipes();
+            renderShoppingList();
+        }
+
+        function renderRecipes() {
+            const grid = document.getElementById('recipesGrid');
+            const expiringItems = inventory.filter(item => {
+                const diff = Math.ceil((new Date(item.expiry) - new Date()) / (1000 * 60 * 60 * 24));
+                return diff <= 3;
+            });
+
+            if (expiringItems.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-500 font-bold border-2 border-dashed border-white/5 rounded-[3rem]">Pantry looks fresh! No rescue recipes needed.</div>`;
+                return;
+            }
+
+            // Create unique recipes based on expiring categories
+            const uniqueCats = [...new Set(expiringItems.map(i => i.cat))];
+            grid.innerHTML = uniqueCats.map(cat => {
+                const recipe = recipeTemplates[cat] || recipeTemplates['Vegetables'];
+                // Automatically suggest staples for the shopping list
+                recipe.staples.forEach(s => {
+                    if (!shoppingList.find(i => i.name === s)) {
+                        shoppingList.push({ name: s, completed: false, auto: true });
+                    }
+                });
+                saveShopping();
+
+                return `
+                    <div class="recipe-card p-8 rounded-[2.5rem] flex flex-col">
+                        <div class="text-5xl mb-6">${recipe.icon}</div>
+                        <h3 class="text-xl font-black text-white mb-2">${recipe.title}</h3>
+                        <p class="text-sm text-slate-500 leading-relaxed mb-8">${recipe.desc}</p>
+                        <div class="mt-auto border-t border-white/5 pt-6 flex justify-between items-center">
+                            <span class="text-[10px] font-black text-green-500 uppercase tracking-widest">Uses ${cat}</span>
+                            <button class="text-[10px] font-black uppercase text-white hover:text-green-400 transition">View Full Recipe →</button>
+                        </div>
+                    </div>`;
+            }).join('');
+            renderShoppingList();
+        }
+
+        function renderShoppingList() {
+            const container = document.getElementById('shoppingListContainer');
+            if (shoppingList.length === 0) {
+                container.innerHTML = `<li class="text-center py-8 text-slate-600 font-medium">All staples stocked.</li>`;
+                return;
+            }
+
+            container.innerHTML = shoppingList.map((item, index) => `
+                <li class="flex items-center justify-between p-5 bg-white/5 rounded-2xl border border-white/5 group hover:border-green-500/30 transition">
+                    <div class="flex items-center gap-4">
+                        <input type="checkbox" ${item.completed ? 'checked' : ''} onchange="toggleItem(${index})" 
+                               class="w-6 h-6 rounded-lg appearance-none border border-white/20 checked:bg-green-500 checked:border-transparent transition-all cursor-pointer">
+                        <span class="${item.completed ? 'line-through text-slate-600' : 'text-slate-200'} font-bold text-sm">
+                            ${item.name} ${item.auto ? '<span class="ml-2 text-[8px] bg-green-500/10 text-green-500 px-2 py-0.5 rounded-full uppercase tracking-widest">Suggested</span>' : ''}
+                        </span>
+                    </div>
+                    <button onclick="removeItem(${index})" class="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-400 transition">✕</button>
+                </li>
+            `).join('');
+        }
+
+        function addManualItem() {
+            const input = document.getElementById('manualItem');
+            if (input.value) {
+                shoppingList.push({ name: input.value, completed: false, auto: false });
+                input.value = '';
+                saveShopping();
+                renderShoppingList();
+            }
+        }
+
+        function toggleItem(index) {
+            shoppingList[index].completed = !shoppingList[index].completed;
+            saveShopping();
+            renderShoppingList();
+        }
+
+        function removeItem(index) {
+            shoppingList.splice(index, 1);
+            saveShopping();
+            renderShoppingList();
+        }
+
+        function clearCompleted() {
+            shoppingList = [];
+            saveShopping();
+            renderShoppingList();
+        }
+
+        function saveShopping() {
+            localStorage.setItem(`shop_${currentUser.email}`, JSON.stringify(shoppingList));
+        }
+
+        function copyToClipboard() {
+            const text = shoppingList.filter(i => !i.completed).map(i => `- ${i.name}`).join('\n');
+            navigator.clipboard.writeText(`My FoodVault Shopping List:\n${text}`);
+            alert("List copied to clipboard!");
+        }
+
+        init();
+    </script>
+</body>
+</html>
